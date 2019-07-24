@@ -29,7 +29,7 @@ Example:
   python WechatImageDecoder.py cache.data.10
 ```
 
-其中，`datfile`为待解密的数据文件。
+其中，`datfile`为待解密的数据文件或者文件目录，解码成功后会删除解码成功的图片。
 - PC端文件名类似`1234567890.dat`，存储路径为：`[X]:\Users\[USER]\Documents\WeChat Files\[WECHAT_USER]\Data`
 - 手机端（Android）文件名类似`cache.data.10`，储存路径为：`/sdcard/tencent/MicroMsg/diskcache`。
 

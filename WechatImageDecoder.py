@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # zhangxiaoyang.hit[at]gmail.com
-
+import os
 import re
+
 
 class WechatImageDecoder:
     def __init__(self, dat_file):
@@ -23,13 +24,13 @@ class WechatImageDecoder:
         return decoders[None]
 
     def _decode_pc_dat(self, dat_file):
-        
+
         def do_magic(header_code, buf):
             return header_code ^ list(buf)[0] if buf else 0x00
-        
+
         def decode(magic, buf):
             return bytearray([b ^ magic for b in list(buf)])
-            
+
         def guess_encoding(buf):
             headers = {
                 'jpg': (0xff, 0xd8),
@@ -37,13 +38,12 @@ class WechatImageDecoder:
                 'gif': (0x47, 0x49),
             }
             for encoding in headers:
-                header_code, check_code = headers[encoding] 
+                header_code, check_code = headers[encoding]
                 magic = do_magic(header_code, buf)
                 _, code = decode(magic, buf[:2])
                 if check_code == code:
                     return (encoding, magic)
-            print('Decode failed')
-            sys.exit(1) 
+            raise Exception("decode " + dat_file + " failed")
 
         with open(dat_file, 'rb') as f:
             buf = bytearray(f.read())
@@ -72,8 +72,23 @@ class WechatImageDecoder:
         raise Exception('Unknown file type')
 
 
+def decode(dat_file_path):
+    if os.path.isdir(dat_file_path):
+        dir_files = os.listdir(dat_file_path)
+        for file in dir_files:
+            temp_path = os.path.join(dat_file_path, file)
+            decode(temp_path)
+    else:
+        try:
+            WechatImageDecoder(dat_file_path)
+            os.remove(dat_file_path)
+        except Exception as e:
+            print(e)
+
+
 if __name__ == '__main__':
     import sys
+
     if len(sys.argv) != 2:
         print('\n'.join([
             'Usage:',
@@ -88,9 +103,10 @@ if __name__ == '__main__':
         ]))
         sys.exit(1)
 
-    _,  dat_file = sys.argv[:2]
+    _, dat_file = sys.argv[:2]
+
     try:
-        WechatImageDecoder(dat_file)
+        decode(dat_file)
     except Exception as e:
         print(e)
         sys.exit(1)
